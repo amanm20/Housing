@@ -44,9 +44,74 @@ The median house value is highest near the coast and decreases as we move Inland
 
 ### Model Evaluation and Selection
 
-Evaluate 3 different types of regression models to find the best one based on predictive performance. begin by splitting data into training and test set (70-30). Then build each of the 3 regression models and compute the RMSE on the test set based on out-of-sample predictions. compare the 3 models based on RMSE to find which is the best based on predictive performance. 
-```R
+We evaluate 3 different regression models to find the best one based on predictive performance.
+- A full additive regression model including all predictors.
+- A reduced model selected through forward selection, optimizing for predictors that contribute
+most significantly to the outcome. 
+- A LASSO regression model to enforce regularization, automatically selecting important features and shrinking coefficients of less important ones.
 
+We begin by splitting the data into a training and test set (70-30 split). Then we build each of the 3 regression models and compute the RMSE on the test set based on out-of-sample predictions.
+
+(I have only attached code snippets. To see detailed coding please check out the pdf document)
+##### 1. Full additive MLR:
+```R
+housing_full_add <- lm(median_house_value ~ .,
+data = training_housing)
+
+housing_test_pred_full_add <- predict(housing_full_add,
+newdata = testing_housing[, -5])
+
+head(housing_test_pred_full_add)
 ```
+<img width="895" alt="Screenshot 2024-03-21 at 6 35 24 AM" src="https://github.com/amanm20/Housing/assets/79020512/9abd0511-1474-4071-9078-2f330fbd9ed5">
+
+
+##### 2. Forward selection:
+```R
+housing_forward_sel <- regsubsets(
+x = median_house_value ~ .,
+nvmax = 9,
+data = training_housing,
+method = "forward")
+
+housing_fwd_summary_df <- tibble(
+n_input_variables = 1:9,
+RSS = housing_fwd_summary$rss,
+BIC = housing_fwd_summary$bic,
+Cp = housing_fwd_summary$cp)
+```
+<img width="437" alt="Screenshot 2024-03-21 at 6 39 05 AM" src="https://github.com/amanm20/Housing/assets/79020512/a0aca2ba-856b-4434-8190-8c4015613c5f">
+
+
+##### 3. LASSO:
+```R
+Housing_cv_lambda_LASSO <- cv.glmnet(
+x = model_matrix_X_train,
+y = matrix_Y_train,
+alpha = 1,
+lambda = exp(seq(5, 12, 0.1)))
+
+plot(Housing_cv_lambda_LASSO, main = "Lambda selection by CV with LASSO\n\n")
+
+Housing_lambda_min_MSE_LASSO <- round(Housing_cv_lambda_LASSO$lambda.min, 4)
+
+Housing_LASSO_min <- glmnet(
+x = model_matrix_X_train,
+y = matrix_Y_train,
+alpha = 1,
+lambda = Housing_lambda_min_MSE_LASSO)
+```
+<img width="903" alt="Screenshot 2024-03-21 at 6 36 09 AM" src="https://github.com/amanm20/Housing/assets/79020512/a333370d-6b4d-4c16-af87-ccd15ce129dd">
+
+##### Comparing RMSE values to evaluate best model
+Finally, we compare the RMSE of the 3 models to determine the best model based on prediction performance.
+
+<img width="345" alt="Screenshot 2024-03-21 at 6 36 45 AM" src="https://github.com/amanm20/Housing/assets/79020512/545a560e-dcb8-4334-bdaf-ba7b5faf61cb">
+
+The RMSE of the LASSO Regression model is 69983.56, which is the least among the 3 models, meaning the LASSO model has the best prediction performance!
 
 ### Results
+
+We saw that median house price of a block increases with increase in median income as the two are strong positively correlated. The median house price also depends on the geographical location and proximity to ocean. It is higher in regions within close proximity to ocean/bay(s) that are on the coast.
+
+We found that the RMSE of LASSO Regression (RMSE = 69983.56) is smaller than the RMSE of the other two models(Full Additive Regression Model RMSE: 70017.91 and Reduced Regression Model RMSE: 70017.34). This highlights the predictive accuracy of the LASSO Regression model in forecasting median house prices within our dataset. By shrinking the coefficients of less influential predictors towards zero, LASSO aids in model simplification and robustness against overfitting, resulting in a more generalizable model with enhanced predictive performance.

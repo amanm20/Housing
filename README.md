@@ -7,7 +7,7 @@
 - [Libraries Used](#libraries-used)
 - [Exploratory Data Analysis](#exploratory-data-analysis-eda)
 - [Model Evaluation and Selection](#model-evaluation-and-selection)
-- [Results](results)
+- [Results](#results)
   
 ### Project Overview 
 This data analysis project leverages R to analyze and predict median housing prices across California, utilizing a dataset comprising various predictors such as median income, ocean proximity, geographical coordinates, etc. Through comprehensive data analysis, including exploratory visualization, regression modeling, and feature selection, we discover the factors driving housing prices in California. Our goal is to provide a robust model for accurate price predictions, offering valuable insights for the real estate market.
